@@ -1,8 +1,16 @@
 name: Docker Compose Linter
 
 on: 
-  workflow_dispatch:
-  
+    #workflow_dispatch: for manual trigger button 
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+    branches:
+      - 'main'
+    paths:
+      - 'Docker-compose.yml'
 jobs:
   linter-job:
     runs-on: ubuntu-latest
@@ -19,10 +27,16 @@ jobs:
           recursive: true
           max-warnings: 1000
 
-      - name: Log the changelog to Discord
-        if: always()
-        uses: tsickert/discord-webhook@v7.0.0
+    #   - name: Log the changelog to Discord
+    #     if: always()
+    #     uses: tsickert/discord-webhook@v7.0.0
+    #     with:
+    #         webhook-url: ${{ secrets.DC_LINTER_DISCORD_WEBHOOK_URL }}
+    #         # content: ${{ steps.docker-compose-linter.outputs.GITHUB }}
+    #         filename: ./Docker-compose.yml
+
+        
+      - name: PR comment with file 
+        uses: thollander/actions-comment-pull-request@v3
         with:
-          webhook-url: ${{ secrets.DC_LINTER_DISCORD_WEBHOOK_URL }}
-          # content: ${{ steps.docker-compose-linter.outputs.GITHUB }}
-          content: $GITHUB_STEP_SUMMARY
+          file-path: ./Docker-compose.yml
