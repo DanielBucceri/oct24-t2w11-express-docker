@@ -81,8 +81,8 @@ jobs:
           body-includes: '!automerge'
 
       - run: |
-          ls ${{ github.event.comment.id }}
-          ls ${{ steps.fc.outputs.comment-id }}
+          echo ${{ github.event.comment.id }}
+          echo ${{ steps.fc.outputs.comment-id }}
 
       - name: Apply a label to the PR to automerge
         if: ${{ github.event.comment.id == steps.fc.outputs.comment-id }}
