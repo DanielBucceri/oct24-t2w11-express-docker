@@ -15,11 +15,20 @@ on:
 
 permissions:
     pull-requests: write
+    contents: read
+    actions: read
+    checks: write
 
 
 jobs:
   test-runner-job:
     runs-on: ubuntu-latest
+    services:
+        mongo:
+          image: mongo
+          ports:
+            - 27017:27017
+
     steps:
       - uses: actions/checkout@v4
 
@@ -35,5 +44,15 @@ jobs:
           node-version: 'latest'
 
       - run: npm install
-            
+
       - run: npm run test
+        env:
+          DATABASE_URL: mongodb://localhost:27017/pr-test-db
+
+      - name: Handle the test reporting
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: JEST tests
+          path: reports/jest-*.xml
+          reporter: jest-junit
