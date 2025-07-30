@@ -1,7 +1,7 @@
 name: PR Test Runner
 
-on: 
-  workflow_dispatch: 
+on:
+  workflow_dispatch:
   pull_request:
     types:
       - opened
@@ -12,24 +12,27 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+  issue_comment:
+    types:
+      - created
 
-permissions:
-    pull-requests: write
-    contents: read
-    actions: read
-    checks: write
-
+permissions: 
+  pull-requests: write
+  contents: read
+  actions: read
+  checks: write 
 
 jobs:
   test-runner-job:
     runs-on: ubuntu-latest
     services:
-        mongo:
-          image: mongo
-          ports:
-            - 27017:27017
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
 
     steps:
+
       - uses: actions/checkout@v4
 
       - run: pwd
@@ -47,8 +50,8 @@ jobs:
 
       - run: npm run test
         env:
-          DATABASE_URL: mongodb://localhost:27017/pr-test-db
-
+          DATABASE_URL: mongodb://localhost:27017/pr-test-runner-db
+      
       - name: Handle the test reporting
         uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
@@ -56,3 +59,15 @@ jobs:
           name: JEST tests
           path: reports/jest-*.xml
           reporter: jest-junit
+
+  pr_commented:
+    needs: ["test-runner-job"]
+    # This job only runs for pull request comments
+    name: PR comment
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '!deploy')}}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo A comment on PR $NUMBER
+        env:
+          NUMBER: ${{ github.event.issue.number }}
