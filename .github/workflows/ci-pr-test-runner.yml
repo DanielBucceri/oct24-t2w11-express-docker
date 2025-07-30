@@ -64,10 +64,28 @@ jobs:
     needs: ["test-runner-job"]
     # This job only runs for pull request comments
     name: PR comment
-    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '!deploy')}}
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '!automerge')}}
     runs-on: ubuntu-latest
     steps:
       - run: |
           echo A comment on PR $NUMBER
         env:
           NUMBER: ${{ github.event.issue.number }}
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment-author: alexstormwood
+          body-includes: '!automerge'
+
+      - run: |
+          ls ${{ github.event.comment.id }}
+          ls ${{ steps.fc.outputs.comment-id }}
+
+      - name: Apply a label to the PR to automerge
+        if: ${{ github.event.comment.id == steps.fc.outputs.comment-id }}
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: automerge
