@@ -77,7 +77,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.issue.number }}
-          comment-author: alexstormwood
+          comment-author: danielbucceri
           body-includes: '!automerge'
 
       - run: |
@@ -89,3 +89,4 @@ jobs:
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: automerge
+          number: ${{ github.event.issue.number }}
